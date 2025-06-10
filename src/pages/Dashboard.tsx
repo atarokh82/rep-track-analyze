@@ -1,41 +1,61 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu";
 import { Link } from "react-router-dom";
-import { Plus } from "lucide-react";
+import { Plus, User, LogOut } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const Dashboard = () => {
-  // Mock data - will be replaced with real data later
-  const exercises = [
-    { id: 1, title: "Bench Press", variations: "Incline, Decline, Flat" },
-    { id: 2, title: "Squats", variations: "Back, Front, Goblet" },
-    { id: 3, title: "Deadlifts", variations: "Conventional, Sumo, Romanian" },
-  ];
+  const { user, signOut } = useAuth();
+  const { toast } = useToast();
 
-  const hasExercises = exercises.length > 0;
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out",
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to log out",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Placeholder exercises data
+  const exercises = []; // Empty for now until we add exercise functionality
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
       {/* Navigation Bar */}
-      <nav className="bg-card border-b px-6 py-4">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
+      <nav className="border-b bg-white px-6 py-4">
+        <div className="flex items-center justify-between max-w-7xl mx-auto">
           <h1 className="text-2xl font-bold">FitTracker</h1>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Avatar className="cursor-pointer">
-                <AvatarFallback>U</AvatarFallback>
-              </Avatar>
+              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                <Avatar className="h-10 w-10">
+                  <AvatarFallback className="bg-primary text-primary-foreground">
+                    {user?.email?.charAt(0).toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem>
-                <Link to="/" className="w-full">Log Out</Link>
+            <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuItem className="font-normal">
+                <User className="mr-2 h-4 w-4" />
+                <span>{user?.email}</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -43,49 +63,46 @@ const Dashboard = () => {
       </nav>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold">Your Exercises</h2>
-          <Link to="/add-exercise">
-            <Button className="rounded-full">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Exercise
-            </Button>
-          </Link>
-        </div>
-
-        {hasExercises ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {exercises.map((exercise) => (
-              <Link key={exercise.id} to={`/exercise/${exercise.id}`}>
-                <Card className="rounded-xl hover-scale cursor-pointer">
-                  <CardContent className="p-6">
-                    <h3 className="text-xl font-semibold mb-2">{exercise.title}</h3>
-                    <p className="text-muted-foreground">{exercise.variations}</p>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-16">
-            <div className="mb-8">
-              <img
-                src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=400&q=80"
-                alt="Start exercising"
-                className="w-64 h-64 object-cover rounded-xl mx-auto opacity-50"
-              />
-            </div>
-            <h3 className="text-2xl font-semibold mb-4">No exercises yet</h3>
-            <p className="text-muted-foreground mb-8">Start tracking your workouts by adding your first exercise</p>
+      <div className="px-6 py-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-3xl font-bold">Your Exercises</h2>
             <Link to="/add-exercise">
               <Button className="rounded-full">
-                <Plus className="mr-2 h-4 w-4" />
-                Add Your First Exercise
+                <Plus className="h-4 w-4 mr-2" />
+                Add Exercise
               </Button>
             </Link>
           </div>
-        )}
+
+          {exercises.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="w-32 h-32 mx-auto mb-6 bg-gray-100 rounded-xl flex items-center justify-center">
+                <Plus className="h-12 w-12 text-gray-400" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">No exercises yet</h3>
+              <p className="text-muted-foreground mb-6">
+                Start tracking your fitness journey by adding your first exercise
+              </p>
+              <Link to="/add-exercise">
+                <Button className="rounded-full">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Your First Exercise
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {exercises.map((exercise, index) => (
+                <Card key={index} className="rounded-xl hover-scale cursor-pointer">
+                  <CardContent className="p-6">
+                    {/* Exercise content will go here when we add exercises */}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

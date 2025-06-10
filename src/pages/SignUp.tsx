@@ -3,18 +3,61 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const SignUp = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { signUp } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Connect to authentication logic later
-    console.log("Sign up attempt:", { username, email, password });
+    
+    if (!username.trim() || !email.trim() || !password.trim()) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      const { error } = await signUp(email, password, username);
+      
+      if (error) {
+        console.error("Sign up error:", error);
+        toast({
+          title: "Sign Up Failed",
+          description: error.message || "An error occurred during sign up",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success!",
+          description: "Account created successfully. You can now log in.",
+        });
+        navigate("/login");
+      }
+    } catch (error: any) {
+      console.error("Unexpected error:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -36,6 +79,7 @@ const SignUp = () => {
                 onChange={(e) => setUsername(e.target.value)}
                 className="rounded-lg"
                 required
+                disabled={loading}
               />
             </div>
             <div className="space-y-2">
@@ -48,6 +92,7 @@ const SignUp = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 className="rounded-lg"
                 required
+                disabled={loading}
               />
             </div>
             <div className="space-y-2">
@@ -60,10 +105,12 @@ const SignUp = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 className="rounded-lg"
                 required
+                disabled={loading}
+                minLength={6}
               />
             </div>
-            <Button type="submit" className="w-full rounded-full h-12">
-              Sign Up
+            <Button type="submit" className="w-full rounded-full h-12" disabled={loading}>
+              {loading ? "Creating Account..." : "Sign Up"}
             </Button>
           </form>
           <div className="mt-6 text-center">
