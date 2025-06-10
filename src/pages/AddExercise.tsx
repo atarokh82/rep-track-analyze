@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,40 +20,68 @@ import {
 import { Link } from "react-router-dom";
 import { ArrowLeft, Plus } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useExercises } from "@/hooks/useExercises";
 
 const AddExercise = () => {
+  const { signOut } = useAuth();
+  const { getUniqueExerciseTitles, createExercise, isCreating } = useExercises();
+  
   const [selectedExercise, setSelectedExercise] = useState("");
   const [exerciseTitle, setExerciseTitle] = useState("");
   const [exerciseDescription, setExerciseDescription] = useState("");
   const [weight, setWeight] = useState("");
   const [reps, setReps] = useState("");
 
-  // Mock previous exercises - will be replaced with real data later
-  const previousExercises = [
-    "Bench Press",
-    "Squats", 
-    "Deadlifts",
-    "Overhead Press",
-    "Pull-ups"
-  ];
+  // Get unique exercise titles for the dropdown
+  const previousExercises = getUniqueExerciseTitles();
+
+  const handleExerciseChange = (value: string) => {
+    setSelectedExercise(value);
+    if (value !== "new") {
+      // Clear the custom title and description when selecting a previous exercise
+      setExerciseTitle("");
+      setExerciseDescription("");
+    }
+  };
 
   const handleAddExercise = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Connect to database logic later
-    console.log("Adding exercise:", {
-      selectedExercise,
-      exerciseTitle,
-      exerciseDescription,
-      weight,
-      reps
+    
+    let title = selectedExercise === "new" || !selectedExercise ? exerciseTitle : selectedExercise;
+    let description = selectedExercise === "new" || !selectedExercise ? exerciseDescription : "";
+    
+    if (!title || !weight || !reps) {
+      return;
+    }
+
+    createExercise({
+      title,
+      description: description || undefined,
+      weight: parseFloat(weight),
+      reps: parseInt(reps),
     });
     
-    // Reset weight and reps fields but keep exercise selection
+    // Reset form
     setWeight("");
     setReps("");
+    if (selectedExercise === "new") {
+      setExerciseTitle("");
+      setExerciseDescription("");
+    }
   };
 
-  const isFormValid = (selectedExercise || (exerciseTitle && exerciseDescription)) && weight && reps;
+  const isFormValid = () => {
+    if (selectedExercise === "new") {
+      return exerciseTitle && weight && reps;
+    } else if (selectedExercise) {
+      return weight && reps;
+    } else {
+      return exerciseTitle && weight && reps;
+    }
+  };
+
+  const showCustomFields = selectedExercise === "new" || !selectedExercise;
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
@@ -74,8 +103,8 @@ const AddExercise = () => {
               </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem>
-                <Link to="/" className="w-full">Log Out</Link>
+              <DropdownMenuItem onClick={signOut}>
+                Log Out
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -95,12 +124,13 @@ const AddExercise = () => {
               {/* Exercise Selection */}
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Select Previous Exercise</Label>
-                  <Select value={selectedExercise} onValueChange={setSelectedExercise}>
+                  <Label>Select Exercise</Label>
+                  <Select value={selectedExercise} onValueChange={handleExerciseChange}>
                     <SelectTrigger className="rounded-lg">
-                      <SelectValue placeholder="Choose from previous exercises" />
+                      <SelectValue placeholder="Choose an exercise or create new" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="new">New Exercise</SelectItem>
                       {previousExercises.map((exercise) => (
                         <SelectItem key={exercise} value={exercise}>
                           {exercise}
@@ -110,36 +140,35 @@ const AddExercise = () => {
                   </Select>
                 </div>
 
-                <div className="text-center text-muted-foreground">
-                  — OR —
-                </div>
-
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="exerciseTitle">Exercise Title</Label>
-                    <Input
-                      id="exerciseTitle"
-                      type="text"
-                      placeholder="e.g., Bench Press"
-                      value={exerciseTitle}
-                      onChange={(e) => setExerciseTitle(e.target.value)}
-                      className="rounded-lg"
-                      disabled={!!selectedExercise}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="exerciseDescription">Description (Variations)</Label>
-                    <Input
-                      id="exerciseDescription"
-                      type="text"
-                      placeholder="e.g., Incline, Decline, Flat"
-                      value={exerciseDescription}
-                      onChange={(e) => setExerciseDescription(e.target.value)}
-                      className="rounded-lg"
-                      disabled={!!selectedExercise}
-                    />
-                  </div>
-                </div>
+                {showCustomFields && (
+                  <>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="exerciseTitle">Exercise Title</Label>
+                        <Input
+                          id="exerciseTitle"
+                          type="text"
+                          placeholder="e.g., Bench Press"
+                          value={exerciseTitle}
+                          onChange={(e) => setExerciseTitle(e.target.value)}
+                          className="rounded-lg"
+                          required={selectedExercise === "new" || !selectedExercise}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="exerciseDescription">Description (Optional)</Label>
+                        <Input
+                          id="exerciseDescription"
+                          type="text"
+                          placeholder="e.g., Incline, Decline, Flat"
+                          value={exerciseDescription}
+                          onChange={(e) => setExerciseDescription(e.target.value)}
+                          className="rounded-lg"
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Weight and Reps */}
@@ -149,6 +178,7 @@ const AddExercise = () => {
                   <Input
                     id="weight"
                     type="number"
+                    step="0.01"
                     placeholder="185"
                     value={weight}
                     onChange={(e) => setWeight(e.target.value)}
@@ -173,10 +203,10 @@ const AddExercise = () => {
               <Button 
                 type="submit" 
                 className="w-full rounded-full h-12"
-                disabled={!isFormValid}
+                disabled={!isFormValid() || isCreating}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                Add Exercise
+                {isCreating ? "Adding..." : "Add Exercise"}
               </Button>
             </form>
           </CardContent>
