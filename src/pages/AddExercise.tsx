@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -25,31 +24,46 @@ import { useExercises } from "@/hooks/useExercises";
 
 const AddExercise = () => {
   const { signOut } = useAuth();
-  const { getUniqueExerciseTitles, createExercise, isCreating } = useExercises();
+  const { getUniqueExerciseTitles, getExerciseVariations, createExercise, isCreating } = useExercises();
   
   const [selectedExercise, setSelectedExercise] = useState("");
-  const [exerciseTitle, setExerciseTitle] = useState("");
-  const [exerciseDescription, setExerciseDescription] = useState("");
+  const [selectedVariation, setSelectedVariation] = useState("");
+  const [newExerciseTitle, setNewExerciseTitle] = useState("");
+  const [newExerciseVariation, setNewExerciseVariation] = useState("");
   const [weight, setWeight] = useState("");
   const [reps, setReps] = useState("");
 
   // Get unique exercise titles for the dropdown
-  const previousExercises = getUniqueExerciseTitles();
+  const previousExercises = ["New Exercise", ...getUniqueExerciseTitles()];
+  
+  // Get variations for selected exercise
+  const variations = selectedExercise && selectedExercise !== "New Exercise" 
+    ? ["New Variation", ...getExerciseVariations(selectedExercise)]
+    : [];
 
   const handleExerciseChange = (value: string) => {
     setSelectedExercise(value);
-    if (value !== "new") {
-      // Clear the custom title and description when selecting a previous exercise
-      setExerciseTitle("");
-      setExerciseDescription("");
-    }
+    setSelectedVariation(""); // Reset variation when exercise changes
+    setNewExerciseTitle("");
+    setNewExerciseVariation("");
+  };
+
+  const handleVariationChange = (value: string) => {
+    setSelectedVariation(value);
   };
 
   const handleAddExercise = (e: React.FormEvent) => {
     e.preventDefault();
     
-    let title = selectedExercise === "new" || !selectedExercise ? exerciseTitle : selectedExercise;
-    let description = selectedExercise === "new" || !selectedExercise ? exerciseDescription : "";
+    let title, description;
+    
+    if (selectedExercise === "New Exercise") {
+      title = newExerciseTitle;
+      description = newExerciseVariation;
+    } else {
+      title = selectedExercise;
+      description = selectedVariation === "New Variation" ? "" : selectedVariation;
+    }
     
     if (!title || !weight || !reps) {
       return;
@@ -65,23 +79,21 @@ const AddExercise = () => {
     // Reset form
     setWeight("");
     setReps("");
-    if (selectedExercise === "new") {
-      setExerciseTitle("");
-      setExerciseDescription("");
+    if (selectedExercise === "New Exercise") {
+      setNewExerciseTitle("");
+      setNewExerciseVariation("");
+    } else {
+      setSelectedVariation("");
     }
   };
 
   const isFormValid = () => {
-    if (selectedExercise === "new") {
-      return exerciseTitle && weight && reps;
-    } else if (selectedExercise) {
-      return weight && reps;
+    if (selectedExercise === "New Exercise") {
+      return newExerciseTitle && weight && reps;
     } else {
-      return exerciseTitle && weight && reps;
+      return selectedExercise && weight && reps;
     }
   };
-
-  const showCustomFields = selectedExercise === "new" || !selectedExercise;
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
@@ -112,25 +124,21 @@ const AddExercise = () => {
       </nav>
 
       {/* Main Content */}
-      <div className="max-w-2xl mx-auto px-6 py-8">
-        <h2 className="text-3xl font-bold mb-8">Add Exercise</h2>
-
+      <div className="max-w-xl mx-auto px-6 py-8">
         <Card className="rounded-xl">
           <CardHeader>
-            <CardTitle>Exercise Details</CardTitle>
+            <CardTitle>Add Exercise</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleAddExercise} className="space-y-6">
-              {/* Exercise Selection */}
               <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Select Exercise</Label>
+                <div>
+                  <Label>Exercise</Label>
                   <Select value={selectedExercise} onValueChange={handleExerciseChange}>
-                    <SelectTrigger className="rounded-lg">
-                      <SelectValue placeholder="Choose an exercise or create new" />
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select an exercise" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="new">New Exercise</SelectItem>
                       {previousExercises.map((exercise) => (
                         <SelectItem key={exercise} value={exercise}>
                           {exercise}
@@ -140,74 +148,85 @@ const AddExercise = () => {
                   </Select>
                 </div>
 
-                {showCustomFields && (
+                {selectedExercise === "New Exercise" ? (
                   <>
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="exerciseTitle">Exercise Title</Label>
-                        <Input
-                          id="exerciseTitle"
-                          type="text"
-                          placeholder="e.g., Bench Press"
-                          value={exerciseTitle}
-                          onChange={(e) => setExerciseTitle(e.target.value)}
-                          className="rounded-lg"
-                          required={selectedExercise === "new" || !selectedExercise}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="exerciseDescription">Description (Optional)</Label>
-                        <Input
-                          id="exerciseDescription"
-                          type="text"
-                          placeholder="e.g., Incline, Decline, Flat"
-                          value={exerciseDescription}
-                          onChange={(e) => setExerciseDescription(e.target.value)}
-                          className="rounded-lg"
-                        />
-                      </div>
+                    <div>
+                      <Label htmlFor="title">Exercise Name</Label>
+                      <Input
+                        id="title"
+                        value={newExerciseTitle}
+                        onChange={(e) => setNewExerciseTitle(e.target.value)}
+                        placeholder="e.g., Bench Press"
+                        className="rounded-lg"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="variation">Variation/Description</Label>
+                      <Input
+                        id="variation"
+                        value={newExerciseVariation}
+                        onChange={(e) => setNewExerciseVariation(e.target.value)}
+                        placeholder="e.g., Incline, With dumbbells"
+                        className="rounded-lg"
+                      />
                     </div>
                   </>
+                ) : selectedExercise && (
+                  <div>
+                    <Label>Variation</Label>
+                    <Select value={selectedVariation} onValueChange={handleVariationChange}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select a variation" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {variations.map((variation) => (
+                          <SelectItem key={variation} value={variation}>
+                            {variation}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 )}
-              </div>
 
-              {/* Weight and Reps */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="weight">Weight (lbs)</Label>
-                  <Input
-                    id="weight"
-                    type="number"
-                    step="0.01"
-                    placeholder="185"
-                    value={weight}
-                    onChange={(e) => setWeight(e.target.value)}
-                    className="rounded-lg"
-                    required
-                  />
+                {/* Weight and Reps */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="weight">Weight (lbs)</Label>
+                    <Input
+                      id="weight"
+                      type="number"
+                      step="0.01"
+                      placeholder="185"
+                      value={weight}
+                      onChange={(e) => setWeight(e.target.value)}
+                      className="rounded-lg"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="reps">Repetitions</Label>
+                    <Input
+                      id="reps"
+                      type="number"
+                      placeholder="8"
+                      value={reps}
+                      onChange={(e) => setReps(e.target.value)}
+                      className="rounded-lg"
+                      required
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="reps">Repetitions</Label>
-                  <Input
-                    id="reps"
-                    type="number"
-                    placeholder="8"
-                    value={reps}
-                    onChange={(e) => setReps(e.target.value)}
-                    className="rounded-lg"
-                    required
-                  />
-                </div>
-              </div>
 
-              <Button 
-                type="submit" 
-                className="w-full rounded-full h-12"
-                disabled={!isFormValid() || isCreating}
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                {isCreating ? "Adding..." : "Add Exercise"}
-              </Button>
+                <Button 
+                  type="submit" 
+                  className="w-full rounded-full h-12"
+                  disabled={!isFormValid() || isCreating}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  {isCreating ? "Adding..." : "Add Exercise"}
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>

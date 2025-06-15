@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,7 +8,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
 const SignUp = () => {
-  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -20,7 +18,7 @@ const SignUp = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!username.trim() || !email.trim() || !password.trim()) {
+    if (!email.trim() || !password.trim()) {
       toast({
         title: "Error",
         description: "Please fill in all fields",
@@ -32,7 +30,7 @@ const SignUp = () => {
     setLoading(true);
     
     try {
-      const { error } = await signUp(email, password, username);
+      const { error } = await signUp(email, password);
       
       if (error) {
         console.error("Sign up error:", error);
@@ -70,19 +68,6 @@ const SignUp = () => {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                type="text"
-                placeholder="Choose a username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="rounded-lg"
-                required
-                disabled={loading}
-              />
-            </div>
-            <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
@@ -100,27 +85,24 @@ const SignUp = () => {
               <Input
                 id="password"
                 type="password"
-                placeholder="Create a password"
+                placeholder="Choose a password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="rounded-lg"
                 required
                 disabled={loading}
-                minLength={6}
               />
             </div>
-            <Button type="submit" className="w-full rounded-full h-12" disabled={loading}>
-              {loading ? "Creating Account..." : "Sign Up"}
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Creating Account..." : "Create Account"}
             </Button>
-          </form>
-          <div className="mt-6 text-center">
-            <p className="text-muted-foreground">
+            <p className="text-sm text-center mt-4">
               Already have an account?{" "}
               <Link to="/login" className="text-primary hover:underline">
-                Log in here
+                Log In
               </Link>
             </p>
-          </div>
+          </form>
         </CardContent>
       </Card>
     </div>
