@@ -5,6 +5,9 @@ import type { Database } from './types';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+console.log('Supabase URL:', SUPABASE_URL);
+console.log('Supabase Anon Key length:', SUPABASE_ANON_KEY?.length);
+
 if (!SUPABASE_URL) throw new Error('Missing VITE_SUPABASE_URL environment variable');
 if (!SUPABASE_ANON_KEY) throw new Error('Missing VITE_SUPABASE_ANON_KEY environment variable');
 
