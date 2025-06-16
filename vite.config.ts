@@ -13,10 +13,6 @@ export default defineConfig(({ mode }) => ({
   build: {
     sourcemap: true
   },
-  define: {
-    __SUPABASE_URL__: JSON.stringify("https://rfaopncdcgmkpdwaqgjg.supabase.co"),
-    __SUPABASE_ANON_KEY__: JSON.stringify("eyJhbGciOiJIUzI1NiIsInR5ncCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmYW9wbmNkY2dta3Bkd2FxZ2pnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk1NzgxNTYsImV4cCI6MjA2NTE1NDE1Nn0.69O2xq-OaRF1f6d4Qd-NI3hOVl-o1fjAMPZDCgHWnqo"),
-  },
   plugins: [
     react(),
     mode === 'development' &&
