@@ -11,4 +11,4 @@ const SUPABASE_ANON_KEY = __SUPABASE_ANON_KEY__;
 if (!SUPABASE_URL) throw new Error('Missing VITE_SUPABASE_URL environment variable');
 if (!SUPABASE_ANON_KEY) throw new Error('Missing VITE_SUPABASE_ANON_KEY environment variable');
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY);
+export const supabase = createClient<Database>(SUPABASE_URL, 'eyJhbGciOiJIUzI1NiIsInR5ncCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmYW9wbmNkY2dta3Bkd2FxZ2pnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk1NzgxNTYsImV4cCI6MjA2NTE1NDE1Nn0.69O2xq-OaRF1f6d4Qd-NI3hOVl-o1fjAMPZDCgHWnqo');
