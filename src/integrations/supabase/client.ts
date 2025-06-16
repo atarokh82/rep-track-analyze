@@ -2,12 +2,13 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-// @ts-ignore
+declare const __SUPABASE_URL__: string;
+declare const __SUPABASE_ANON_KEY__: string;
+
 const SUPABASE_URL = __SUPABASE_URL__;
-// @ts-ignore
 const SUPABASE_ANON_KEY = __SUPABASE_ANON_KEY__;
 
-console.log('Supabase URL:', SUPABASE_URL);
-console.log('Supabase Anon Key length:', SUPABASE_ANON_KEY?.length);
+if (!SUPABASE_URL) throw new Error('Missing VITE_SUPABASE_URL environment variable');
+if (!SUPABASE_ANON_KEY) throw new Error('Missing VITE_SUPABASE_ANON_KEY environment variable');
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY);
