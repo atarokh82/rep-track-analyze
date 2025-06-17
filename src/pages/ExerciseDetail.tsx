@@ -153,30 +153,98 @@ const ExerciseDetail = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {getWeightClasses(exercise.history).map((weightClass, index) => (
-                      <div 
-                        key={index}
-                        className="flex items-center justify-between p-4 bg-muted rounded-lg hover:bg-muted/80 transition-colors"
-                      >
-                        <div>
-                          <p className="text-lg font-semibold">{weightClass.weight} lbs</p>
-                          <p className="text-sm text-muted-foreground">
-                            {weightClass.count} set{weightClass.count !== 1 ? 's' : ''}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-medium">Max: {weightClass.maxReps} reps</p>
-                          <p className="text-sm text-muted-foreground">
-                            Avg: {weightClass.avgReps} reps
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                    {getWeightClasses(exercise.history).map((weightClass, index) => {
+                      const linkPath = `/exercise/${id}/weight/${weightClass.weight}`;
+                      return (
+                        <Link 
+                          to={linkPath}
+                          key={index}
+                          className="block group relative"
+                        >
+                          <div className="flex items-center gap-4 p-4 bg-muted rounded-lg hover:bg-accent transition-all duration-200 group-hover:shadow-lg group-hover:scale-[1.02] cursor-pointer border border-transparent group-hover:border-primary/20">
+                            <div className="shrink-0">
+                              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                                <BarChart3 className="h-5 w-5 text-primary" />
+                              </div>
+                            </div>
+                            <div className="flex-grow">
+                              <div>
+                                <p className="text-lg font-semibold group-hover:text-primary transition-colors">{weightClass.weight} lbs</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {weightClass.count} set{weightClass.count !== 1 ? 's' : ''}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <p className="text-sm font-medium">Max: {weightClass.maxReps} reps</p>
+                              <p className="text-sm text-muted-foreground">
+                                Avg: {weightClass.avgReps} reps
+                              </p>
+                            </div>
+                          </div>
+                        </Link>
+                      );
+                    })}
                   </div>
                 </CardContent>
               </Card>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Analysis Section */}
+                <Card className="rounded-xl">
+                  <CardHeader>
+                    <CardTitle>Exercise Analysis</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-6">
+                      {getWeightClasses(exercise.history).map((weightClass, index) => (
+                        <Link 
+                          to={`/exercise/${id}/weight/${weightClass.weight}`}
+                          key={index}
+                          className="block group"
+                        >
+                          <div className="p-4 bg-muted rounded-lg space-y-3 hover:bg-accent transition-all duration-200 cursor-pointer group-hover:shadow-md relative">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <h3 className="text-lg font-semibold group-hover:text-primary transition-colors">{weightClass.weight} lbs</h3>
+                                <p className="text-sm text-muted-foreground">
+                                  {weightClass.count} set{weightClass.count !== 1 ? 's' : ''}
+                                </p>
+                              </div>
+                              <div className="bg-primary/10 text-primary text-sm font-medium px-3 py-1 rounded-full">
+                                Volume: {weightClass.totalVolume.toLocaleString()} lbs
+                              </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-3 gap-3">
+                              <div className="bg-background rounded-lg p-3">
+                                <p className="text-sm text-muted-foreground mb-1">Maximum</p>
+                                <p className="text-xl font-bold">{weightClass.maxReps}</p>
+                                <p className="text-xs text-muted-foreground">reps</p>
+                              </div>
+                              <div className="bg-background rounded-lg p-3">
+                                <p className="text-sm text-muted-foreground mb-1">Average</p>
+                                <p className="text-xl font-bold">{weightClass.avgReps}</p>
+                                <p className="text-xs text-muted-foreground">reps</p>
+                              </div>
+                              <div className="bg-background rounded-lg p-3">
+                                <p className="text-sm text-muted-foreground mb-1">Minimum</p>
+                                <p className="text-xl font-bold">{weightClass.minReps}</p>
+                                <p className="text-xs text-muted-foreground">reps</p>
+                              </div>
+                            </div>
+                            
+                            {/* View Details indicator */}
+                            <div className="absolute right-4 top-4 text-muted-foreground/50 group-hover:text-primary transition-colors">
+                              <BarChart3 className="h-5 w-5" />
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* Workout History */}
                 <Card className="rounded-xl">
                   <CardHeader>
@@ -196,50 +264,6 @@ const ExerciseDetail = () => {
                             <p className="text-sm text-muted-foreground">
                               {workout.weight} lbs × {workout.reps} reps
                             </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Analysis Section */}
-                <Card className="rounded-xl">
-                  <CardHeader>
-                    <CardTitle>Exercise Analysis</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-6">
-                      {getWeightClasses(exercise.history).map((weightClass, index) => (
-                        <div key={index} className="p-4 bg-muted rounded-lg space-y-3">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <h3 className="text-lg font-semibold">{weightClass.weight} lbs</h3>
-                              <p className="text-sm text-muted-foreground">
-                                {weightClass.count} set{weightClass.count !== 1 ? 's' : ''}
-                              </p>
-                            </div>
-                            <div className="bg-primary/10 text-primary text-sm font-medium px-3 py-1 rounded-full">
-                              Volume: {weightClass.totalVolume.toLocaleString()} lbs
-                            </div>
-                          </div>
-                          
-                          <div className="grid grid-cols-3 gap-3">
-                            <div className="bg-background rounded-lg p-3">
-                              <p className="text-sm text-muted-foreground mb-1">Maximum</p>
-                              <p className="text-xl font-bold">{weightClass.maxReps}</p>
-                              <p className="text-xs text-muted-foreground">reps</p>
-                            </div>
-                            <div className="bg-background rounded-lg p-3">
-                              <p className="text-sm text-muted-foreground mb-1">Average</p>
-                              <p className="text-xl font-bold">{weightClass.avgReps}</p>
-                              <p className="text-xs text-muted-foreground">reps</p>
-                            </div>
-                            <div className="bg-background rounded-lg p-3">
-                              <p className="text-sm text-muted-foreground mb-1">Minimum</p>
-                              <p className="text-xl font-bold">{weightClass.minReps}</p>
-                              <p className="text-xs text-muted-foreground">reps</p>
-                            </div>
                           </div>
                         </div>
                       ))}

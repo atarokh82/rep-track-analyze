@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,6 +9,7 @@ import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import Dashboard from "./pages/Dashboard";
 import ExerciseDetail from "./pages/ExerciseDetail";
+import WeightClassDetail from "./pages/WeightClassDetail";
 import AddExercise from "./pages/AddExercise";
 import NotFound from "./pages/NotFound";
 
@@ -51,6 +51,7 @@ const AppRoutes = () => {
       <Route path="/signup" element={<AuthRoute><SignUp /></AuthRoute>} />
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/exercise/:id" element={<ProtectedRoute><ExerciseDetail /></ProtectedRoute>} />
+      <Route path="/exercise/:exerciseId/weight/:weight" element={<ProtectedRoute><WeightClassDetail /></ProtectedRoute>} />
       <Route path="/add-exercise" element={<ProtectedRoute><AddExercise /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
