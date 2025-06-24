@@ -1,9 +1,6 @@
-const CLAUDE_API_URL = '/api/claude/messages';
-const CLAUDE_MODEL = 'claude-3-5-sonnet-20240620'; // Using Claude 3 Sonnet model (Feb 29, 2024 version)
+import { supabase } from '../integrations/supabase/client';
 
-if (!import.meta.env.VITE_CLAUDE_API_KEY) {
-  throw new Error('Missing VITE_CLAUDE_API_KEY environment variable');
-}
+const CLAUDE_MODEL = 'claude-3-5-sonnet-20241022'; // Using Claude 3.5 Sonnet model (Oct 22, 2024 version)
 
 interface AnalyzeWorkoutInput {
   exerciseTitle: string;
@@ -56,41 +53,31 @@ Please analyze this data and provide:
 Format your response as a JSON object with these keys: progressTrends, strengths, weaknesses, recommendations.
 Keep each section concise (1-2 sentences).`;
 
-    const response = await fetch(CLAUDE_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': import.meta.env.VITE_CLAUDE_API_KEY,
-        'anthropic-version': '2023-06-01',  // Using stable API version
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: CLAUDE_MODEL,  // Using Claude Sonnet 3 model
+    const { data: fnData, error: fnError } = await supabase.functions.invoke('claude-analyze', {
+      body: {
+        model: CLAUDE_MODEL,
         max_tokens: 1024,
         messages: [
           { role: 'user', content: prompt }
         ]
-      })
+      }
     });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(`API request failed: ${response.statusText}${errorData ? ` - ${JSON.stringify(errorData)}` : ''}`);
+    if (fnError) {
+      throw new Error(`Edge function error: ${fnError.message}`);
     }
 
-    const data = await response.json();
-    
     // Log the response to help debug
-    console.log('Claude API response:', JSON.stringify(data, null, 2));
+    console.log('Claude API response:', JSON.stringify(fnData, null, 2));
     
-    // Handle the response based on the API version
+    // Handle the response from our edge function
     let analysisText;
-    if (data.content) {
-      // Direct API response
-      analysisText = data.content[0].text;
-    } else if (data.messages) {
-      // Messages API response
-      analysisText = data.messages[0].content[0].text;
+    if (fnData.content) {
+      // Content is in the response
+      analysisText = fnData.content[0].text;
+    } else if (fnData.messages && fnData.messages[0].content) {
+      // Messages format response
+      analysisText = fnData.messages[0].content;
     } else {
       throw new Error('Unexpected response format from Claude API');
     }
