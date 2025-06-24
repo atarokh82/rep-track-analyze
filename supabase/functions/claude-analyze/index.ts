@@ -4,7 +4,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 // @ts-ignore
 const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
-const ALLOWED_ORIGINS = ['http://localhost:5173', 'https://your-production-domain.com', 'http://localhost:8080'];
+const ALLOWED_ORIGINS = ['http://localhost:5173', 'https://atarokh82.github.io', 'http://localhost:8080'];
 
 interface Message {
   role: 'user' | 'assistant';
