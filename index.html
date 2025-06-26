@@ -5,6 +5,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FitTracker - Track Your Fitness Journey</title>
+    <script>
+      // Dynamically set the base URL based on the hosting environment
+      (function() {
+        var isNetlify = window.location.hostname.includes('netlify');
+        var baseElement = document.createElement('base');
+        baseElement.href = isNetlify ? '/' : '/rep-track-analyze/';
+        document.head.appendChild(baseElement);
+      })();
+    </script>
     <meta name="description" content="Track your exercises, analyze your progress, and reach your fitness goals with FitTracker" />
     <meta name="author" content="FitTracker" />
 
