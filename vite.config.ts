@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
   return {
-  base: process.env.DEPLOY_TARGET === 'netlify' ? '/' : '/rep-track-analyze/',
+  base: mode === 'netlify' ? '/' : '/rep-track-analyze/',
   server: {
     host: "::",
     port: 8080,
