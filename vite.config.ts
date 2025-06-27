@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
   return {
-  base: mode === 'netlify' ? '/' : '/rep-track-analyze/',
+  base: mode === 'production' ? '/rep-track-analyze/' : '/', // production = GitHub Pages, development/netlify = '/'
   server: {
     host: "::",
     port: 8080,
